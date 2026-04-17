@@ -4,8 +4,6 @@ using ObsidianAgent.Mcp.Services;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 bool verbose = args.Contains("--verbose");
-bool isDevContainer = args.Contains("--devcontainer")
-    || Environment.GetEnvironmentVariable("DEVCONTAINER") == "true";
 
 builder.Services.AddSingleton<ICliRunner, CliRunner>();
 builder.Services.AddSingleton<IObsidianCliService, ObsidianCliService>();
@@ -17,7 +15,6 @@ builder.Services
 builder.Services.PostConfigure<ObsidianOptions>(opts =>
 {
     if (verbose) opts.Verbose = true;
-    if (isDevContainer) opts.IsDevContainer = true;
 
     var userSettings = UserSettings.Load();
     if (!string.IsNullOrEmpty(userSettings.VaultName))

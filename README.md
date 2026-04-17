@@ -19,7 +19,8 @@ CLI (Spectre.Console)  ──MCP Client──▶  MCP Server (ASP.NET Core HttpT
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) with **Docker Model Runner** enabled
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (or use the devcontainer)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Obsidian](https://obsidian.md/) desktop app (must be running for CLI access)
 
 ### Pull an AI model
 
@@ -28,18 +29,6 @@ docker model pull ai/mistral-small
 ```
 
 ## Quick Start
-
-### Option 1: Devcontainer (recommended)
-
-1. Open this repo in VS Code
-2. Reopen in Container (Cmd/Ctrl+Shift+P → "Dev Containers: Reopen in Container")
-3. Run the CLI:
-
-```bash
-dotnet run --project src/ObsidianAgent.Cli
-```
-
-### Option 2: Local
 
 ```bash
 dotnet restore
@@ -54,7 +43,7 @@ The CLI will auto-detect that the MCP server isn't running, start it in the back
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `AI_ENDPOINT` | `http://host.docker.internal:12434/engines/v1` | Docker Model Runner endpoint |
+| `AI_ENDPOINT` | `http://localhost:12434/engines/v1` | Docker Model Runner endpoint |
 | `AI_MODEL` | `ai/gpt-oss` | Model to use for inference |
 | `MCP_ENDPOINT` | `http://localhost:5120` | MCP server endpoint |
 | `MCP_PROJECT_PATH` | `src/ObsidianAgent.Mcp` | Path to MCP server project (for auto-start) |

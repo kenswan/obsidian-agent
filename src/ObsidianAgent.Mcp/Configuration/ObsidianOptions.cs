@@ -10,5 +10,4 @@ public class ObsidianOptions
     public string DailyNoteFolder { get; set; } = "Daily";
     public string TemplateFolder { get; set; } = "Templates";
     public bool Verbose { get; set; }
-    public bool IsDevContainer { get; set; }
 }

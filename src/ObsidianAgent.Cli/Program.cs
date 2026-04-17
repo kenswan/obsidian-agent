@@ -12,8 +12,6 @@ using Spectre.Console.Rendering;
 // ── Configuration ──────────────────────────────────────────────────────
 
 bool verbose = args.Contains("--verbose");
-bool isDevContainer = args.Contains("--devcontainer")
-    || Environment.GetEnvironmentVariable("DEVCONTAINER") == "true";
 
 string mcpEndpoint = Environment.GetEnvironmentVariable("MCP_ENDPOINT")
     ?? "http://localhost:5120";
@@ -22,9 +20,7 @@ string mcpProjectPath = Environment.GetEnvironmentVariable("MCP_PROJECT_PATH")
     ?? "src/ObsidianAgent.Mcp";
 
 string aiEndpoint = Environment.GetEnvironmentVariable("AI_ENDPOINT")
-    ?? (isDevContainer
-        ? "http://host.docker.internal:12434/engines/v1"
-        : "http://localhost:12434/engines/v1");
+    ?? "http://localhost:12434/engines/v1";
 
 string aiModel = Environment.GetEnvironmentVariable("AI_MODEL")
     ?? "ai/gpt-oss";
@@ -43,7 +39,7 @@ if (!serverRunning)
 {
     AnsiConsole.MarkupLine("[dim]MCP server not detected. Starting it automatically...[/]");
 
-    mcpServerProcess = StartMcpServer(mcpProjectPath, verbose, isDevContainer);
+    mcpServerProcess = StartMcpServer(mcpProjectPath, verbose);
 
     if (mcpServerProcess is null)
     {
@@ -86,6 +82,9 @@ await using McpClient mcpClient = await McpClient
 IList<McpClientTool> mcpTools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
 
 AnsiConsole.MarkupLine($"[dim]Loaded {mcpTools.Count} MCP tools.[/]");
+
+// Resolve the vault name from the same config chain the MCP server uses
+string vaultName = ResolveVaultName(mcpProjectPath);
 
 // ── AI Chat Client (Docker Model Runner) ───────────────────────────────
 
@@ -136,7 +135,7 @@ AnsiConsole.Write(
         .Color(Color.MediumPurple));
 
 AnsiConsole.Write(
-    new Rule("[dim]Chat with your vault[/]")
+    new Rule($"[dim]Vault: [cyan]{Markup.Escape(vaultName)}[/][/]")
         .RuleStyle(Style.Parse("purple"))
         .Centered());
 
@@ -245,13 +244,9 @@ static async Task<bool> IsMcpServerReachableAsync(string endpoint)
     }
 }
 
-static Process? StartMcpServer(string projectPath, bool verbose, bool isDevContainer)
+static Process? StartMcpServer(string projectPath, bool verbose)
 {
-    string extraArgs = string.Join(" ",
-        new[] { verbose ? "--verbose" : null, isDevContainer ? "--devcontainer" : null }
-            .Where(a => a is not null));
-
-    string separator = extraArgs.Length > 0 ? $" -- {extraArgs}" : "";
+    string separator = verbose ? " -- --verbose" : "";
 
     var startInfo = new ProcessStartInfo
     {
@@ -480,4 +475,40 @@ static string FormatArguments(IDictionary<string, object?>? arguments)
 {
     if (arguments is null || arguments.Count == 0) return "";
     return string.Join(", ", arguments.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+}
+
+static string ResolveVaultName(string mcpProjectPath)
+{
+    const string defaultVault = "sample-vault";
+
+    // Check user settings first (~/.obsidian-agent/settings.json)
+    try
+    {
+        string userSettingsPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".obsidian-agent", "settings.json");
+
+        if (File.Exists(userSettingsPath))
+        {
+            string json = File.ReadAllText(userSettingsPath);
+            var match = System.Text.RegularExpressions.Regex.Match(json, "\"vaultName\"\\s*:\\s*\"([^\"]+)\"", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success) return match.Groups[1].Value;
+        }
+    }
+    catch { }
+
+    // Fall back to MCP project appsettings.json
+    try
+    {
+        string appSettingsPath = Path.Combine(mcpProjectPath, "appsettings.json");
+        if (File.Exists(appSettingsPath))
+        {
+            string json = File.ReadAllText(appSettingsPath);
+            var match = System.Text.RegularExpressions.Regex.Match(json, "\"VaultName\"\\s*:\\s*\"([^\"]+)\"");
+            if (match.Success) return match.Groups[1].Value;
+        }
+    }
+    catch { }
+
+    return defaultVault;
 }

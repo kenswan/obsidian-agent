@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ObsidianAgent.Mcp/ObsidianAgent.Mcp.csproj" />
+    <Project Path="src/ObsidianAgent.Cli/ObsidianAgent.Cli.csproj" />
+  </Folder>
+</Solution>

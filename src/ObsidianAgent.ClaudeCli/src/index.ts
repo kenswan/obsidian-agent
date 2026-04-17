@@ -6,7 +6,7 @@ import path from "node:path";
 import boxen from "boxen";
 import chalk from "chalk";
 import figlet from "figlet";
-import { query } from "@anthropic-ai/claude-agent-sdk";
+import { query, type SDKMessage, type SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
 import { AGENT_INSTRUCTIONS } from "./agentInstructions.js";
 import { McpServerManager } from "./mcpServerManager.js";
 import { renderStreamingResponse, renderToolCallsPanel } from "./chatRenderer.js";
@@ -36,13 +36,85 @@ async function main(): Promise<void> {
   renderHeader(vaultName, verbose);
 
   const rl = readline.createInterface({ input, output });
-  let sessionId: string | undefined;
 
   // Node 25's `beforeExit` detection considers a readline-waiting-on-stdin
-  // process to have no pending work after the SDK subprocess teardown, so it
-  // terminates mid-session. A no-op interval keeps the event loop alive until
-  // we explicitly break out of the chat loop.
+  // process to have no pending work and terminates mid-session. A no-op
+  // interval keeps the event loop alive until we explicitly break out.
   const keepalive = setInterval(() => {}, 1 << 30);
+
+  // Interactive multi-turn chat uses streaming input: one `query()` call with
+  // an AsyncIterable<SDKUserMessage> that yields each user turn. The SDK keeps
+  // a single subprocess alive across turns instead of spawning a new one per
+  // message (which doesn't reliably resume prior conversation state).
+  const inputQueue: SDKUserMessage[] = [];
+  let resolveWaiter: ((msg: SDKUserMessage) => void) | null = null;
+  let inputClosed = false;
+
+  async function* promptStream(): AsyncGenerator<SDKUserMessage> {
+    while (!inputClosed) {
+      if (inputQueue.length > 0) {
+        yield inputQueue.shift()!;
+        continue;
+      }
+      const next = await new Promise<SDKUserMessage | null>((resolve) => {
+        resolveWaiter = resolve;
+      });
+      if (next === null) return;
+      yield next;
+    }
+  }
+
+  function submitUserMessage(text: string): void {
+    const msg: SDKUserMessage = {
+      type: "user",
+      message: { role: "user", content: text },
+      parent_tool_use_id: null,
+    };
+    if (resolveWaiter) {
+      const r = resolveWaiter;
+      resolveWaiter = null;
+      r(msg);
+    } else {
+      inputQueue.push(msg);
+    }
+  }
+
+  function closeInput(): void {
+    inputClosed = true;
+    if (resolveWaiter) {
+      const r = resolveWaiter;
+      resolveWaiter = null;
+      r(null as unknown as SDKUserMessage);
+    }
+  }
+
+  const response = query({
+    prompt: promptStream(),
+    options: {
+      ...(claudeModel ? { model: claudeModel } : {}),
+      systemPrompt: AGENT_INSTRUCTIONS,
+      mcpServers: {
+        obsidian: { type: "http", url: mcpEndpoint },
+      },
+      tools: [],
+      permissionMode: "bypassPermissions",
+      allowDangerouslySkipPermissions: true,
+      includePartialMessages: true,
+    },
+  });
+
+  const responseIterator = response[Symbol.asyncIterator]();
+
+  // Yields messages from the shared stream until a `result` message arrives,
+  // then returns — delimiting one assistant turn for the renderer.
+  async function* turnStream(): AsyncGenerator<SDKMessage> {
+    while (true) {
+      const { done, value } = await responseIterator.next();
+      if (done) return;
+      yield value;
+      if (value.type === "result") return;
+    }
+  }
 
   try {
     while (true) {
@@ -58,27 +130,10 @@ async function main(): Promise<void> {
         break;
       }
 
-      const response = query({
-        prompt: trimmed,
-        options: {
-          ...(claudeModel ? { model: claudeModel } : {}),
-          systemPrompt: AGENT_INSTRUCTIONS,
-          mcpServers: {
-            obsidian: { type: "http", url: mcpEndpoint },
-          },
-          tools: [],
-          permissionMode: "bypassPermissions",
-          allowDangerouslySkipPermissions: true,
-          includePartialMessages: true,
-          ...(sessionId ? { resume: sessionId } : {}),
-        },
-      });
+      submitUserMessage(trimmed);
 
       try {
-        const result = await renderStreamingResponse(response);
-        if (!sessionId && result.sessionId) {
-          sessionId = result.sessionId;
-        }
+        const result = await renderStreamingResponse(turnStream());
         renderToolCallsPanel(result.toolCalls);
         output.write("\n");
       } catch (err) {
@@ -86,6 +141,8 @@ async function main(): Promise<void> {
       }
     }
   } finally {
+    closeInput();
+    response.close();
     clearInterval(keepalive);
     rl.close();
   }

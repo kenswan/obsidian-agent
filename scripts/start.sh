@@ -11,4 +11,4 @@ echo "Starting Obsidian Agent CLI..."
 echo "The CLI will auto-start the MCP server if needed."
 echo ""
 
-dotnet run --project src/ObsidianAgent.Cli
+dotnet run --project src/ObsidianAgent.Cli -- "$@"

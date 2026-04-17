@@ -4,6 +4,7 @@
   "forwardPorts": [5120],
   "postCreateCommand": "dotnet restore",
   "remoteEnv": {
+    "DEVCONTAINER": "true",
     "AI_ENDPOINT": "http://host.docker.internal:12434/engines/v1",
     "AI_MODEL": "ai/gpt-oss",
     "ASPNETCORE_ENVIRONMENT": "Development"
@@ -15,4 +16,15 @@
       ]
     }
   }
+
+  // To mount the Obsidian CLI binary from the host, set the OBSIDIAN_CLI_DIR
+  // environment variable on your host machine pointing to the directory
+  // containing the 'obsidian' executable, then uncomment the following:
+  //
+  // "mounts": [
+  //   "source=${localEnv:OBSIDIAN_CLI_DIR},target=/opt/obsidian-cli,type=bind,consistency=cached"
+  // ],
+  //
+  // and change postCreateCommand to:
+  // "postCreateCommand": "dotnet restore && [ -f /opt/obsidian-cli/obsidian ] && ln -sf /opt/obsidian-cli/obsidian /usr/local/bin/obsidian || true"
 }

@@ -48,6 +48,10 @@ public sealed class CliRunner(ILogger<CliRunner> logger) : ICliRunner
             command,
             process.ExitCode);
 
-        return new CliResult(process.ExitCode, output.Trim(), error.Trim());
+        return new CliResult(process.ExitCode, output.Trim(), error.Trim())
+        {
+            ExecutedCommand = command,
+            ExecutedArguments = arguments
+        };
     }
 }

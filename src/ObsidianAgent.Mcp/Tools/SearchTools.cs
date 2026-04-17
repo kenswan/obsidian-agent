@@ -1,14 +1,19 @@
 using System.ComponentModel;
+using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
+using ObsidianAgent.Mcp.Configuration;
 using ObsidianAgent.Mcp.Services;
 
 namespace ObsidianAgent.Mcp.Tools;
 
 [McpServerToolType]
 public class SearchTools(
-    VaultService vaultService,
+    IObsidianCliService obsidianCli,
+    IOptions<ObsidianOptions> options,
     ILogger<SearchTools> logger)
 {
+    private readonly ObsidianOptions config = options.Value;
+
     [McpServerTool, Description("Search for notes containing the given text query")]
     public async Task<object> SearchNotes(
         string query,
@@ -17,33 +22,37 @@ public class SearchTools(
     {
         logger.LogInformation("Searching notes for '{Query}'", query);
 
-        string vaultPath = vaultService.GetVaultPath();
+        CliResult result = await obsidianCli.SearchAsync(query, limit, cancellationToken).ConfigureAwait(false);
 
-        if (!Directory.Exists(vaultPath))
+        if (!result.IsSuccess)
         {
-            return new { Query = query, Count = 0, Matches = Array.Empty<object>(), Error = "Vault path not found" };
+            return Enrich(
+                new { Query = query, Count = 0, Matches = Array.Empty<object>(), Error = result.Error.Length > 0 ? result.Error : result.Output },
+                result);
         }
 
-        List<object> matches = [];
+        string[] lines = result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        foreach (string filePath in Directory.EnumerateFiles(vaultPath, "*.md", SearchOption.AllDirectories))
+        List<object> matches = lines
+            .Select(line => (object)new { Path = line })
+            .ToList();
+
+        return Enrich(new { Query = query, Count = matches.Count, Matches = matches }, result);
+    }
+
+    private object Enrich(object response, CliResult cliResult)
+    {
+        if (!config.Verbose) return response;
+
+        return new
         {
-            if (matches.Count >= limit)
+            Result = response,
+            Diagnostics = new
             {
-                break;
+                cliResult.ExecutedCommand,
+                cliResult.ExecutedArguments,
+                cliResult.ExitCode
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            string content = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
-
-            if (content.Contains(query, StringComparison.OrdinalIgnoreCase))
-            {
-                string relativePath = Path.GetRelativePath(vaultPath, filePath);
-                matches.Add(new { Path = relativePath });
-            }
-        }
-
-        return new { Query = query, Count = matches.Count, Matches = matches };
+        };
     }
 }

@@ -57,7 +57,9 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
-Configuration/ObsidianOptions.cs
+Configuration/
+ ObsidianOptions.cs
+ UserSettings.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  ObsidianAgent.Mcp.AssemblyInfo.cs
@@ -67,8 +69,10 @@ Services/
  CliResult.cs
  CliRunner.cs
  ICliRunner.cs
- VaultService.cs
+ IObsidianCliService.cs
+ ObsidianCliService.cs
 Tools/
+ ConfigTools.cs
  NoteTools.cs
  SearchTools.cs
 

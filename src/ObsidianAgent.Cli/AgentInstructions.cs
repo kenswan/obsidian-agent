@@ -60,4 +60,28 @@ public static class AgentInstructions
         - Cross-Vault Search: SetVault to switch vaults, SearchWithContext to
           find content, then switch back.
         """;
+
+    /// <summary>
+    /// Copilot-only addendum. Appended to <see cref="System"/> when using the
+    /// GitHub Copilot backend. Not sent to the Docker Model Runner backend,
+    /// whose smaller local models do not need (and may be destabilized by)
+    /// this steering. Copilot agents ship with their own shell/file/web tools
+    /// and will reach for them by default — this guardrail keeps them routed
+    /// through the MCP tools above so the permission gate never trips.
+    /// </summary>
+    public const string CopilotToolGuardrails = """
+        TOOL USAGE RULES (strict, Copilot-specific):
+        - The Obsidian MCP tools listed above are the ONLY tools you may use
+          to interact with the vault.
+        - DO NOT use your built-in shell, file-system, or web tools (e.g.
+          read_file, write_file, bash, ls, grep, run_command, fetch, etc.)
+          for ANY vault operation. They will be blocked by permissions and
+          will fail.
+        - When answering questions about the vault (counts, contents,
+          structure, tags, tasks, etc.), always route through the MCP tools
+          above — never infer or guess from memory, and never fall back to
+          native tools.
+        - If a user request cannot be satisfied with the MCP tools listed,
+          say so plainly instead of reaching for a native tool.
+        """;
 }

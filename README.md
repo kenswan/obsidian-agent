@@ -7,22 +7,26 @@ A sandbox example of using local AI models to manage an [Obsidian](https://obsid
 ```
 CLI (Spectre.Console)  ──MCP Client──▶  MCP Server (ASP.NET Core HttpTransport)
        │                                       │
-       │ IChatClient                           │ Vault tools (read/create/search/etc.)
+       │ AIAgent                               │ Vault tools (read/create/search/etc.)
        ▼                                       ▼
-  Docker Model Runner                    Obsidian Vault (filesystem)
-  (localhost:12434)                      (sample-vault/)
+  Docker Model Runner     ─ or ─    Obsidian Vault (filesystem)
+  (localhost:12434)                     (sample-vault/)
+  GitHub Copilot CLI
+  (via --copilot flag)
 ```
 
-- **ObsidianAgent.Cli** — Interactive terminal chat powered by Spectre.Console. Connects to the MCP server as an agent tool and uses Docker Model Runner for AI inference. Auto-starts the MCP server if it's not already running.
+- **ObsidianAgent.Cli** — Interactive terminal chat powered by Spectre.Console. Connects to the MCP server as an agent tool. Uses Docker Model Runner by default, or the GitHub Copilot CLI when invoked with `--copilot`. Auto-starts the MCP server if it's not already running.
 - **ObsidianAgent.Mcp** — ASP.NET Core app exposing 34 Obsidian vault operations (notes, search, graph navigation, tasks, daily notes, properties, tags, templates, and vault intelligence) as MCP tools over HTTP.
 
 ## Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) with **Docker Model Runner** enabled
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Obsidian](https://obsidian.md/) desktop app (must be running for CLI access)
+- One of the following AI backends:
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop/) with **Docker Model Runner** enabled (default)
+  - [GitHub Copilot CLI](https://github.com/github/copilot-sdk) installed and authenticated (required only when using `--copilot`)
 
-### Pull an AI model
+### Pull an AI model (Docker Model Runner backend)
 
 ```bash
 docker model pull ai/mistral-small
@@ -39,7 +43,14 @@ The CLI will auto-detect that the MCP server isn't running, start it in the back
 
 ## Configuration
 
-### Environment Variables
+### CLI Flags
+
+| Flag | Description |
+|------|-------------|
+| `--verbose` | Enable verbose logging |
+| `--copilot [model]` | Use GitHub Copilot as the AI backend. Defaults to `gpt-4.1` (lowest token spend); pass a model (e.g. `claude-opus-4.5`) to override. |
+
+### Environment Variables (Docker Model Runner backend)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -47,6 +58,18 @@ The CLI will auto-detect that the MCP server isn't running, start it in the back
 | `AI_MODEL` | `ai/gpt-oss` | Model to use for inference |
 | `MCP_ENDPOINT` | `http://localhost:5120` | MCP server endpoint |
 | `MCP_PROJECT_PATH` | `src/ObsidianAgent.Mcp` | Path to MCP server project (for auto-start) |
+
+### GitHub Copilot backend
+
+When `--copilot` is passed, the CLI uses the [GitHub Copilot CLI](https://github.com/github/copilot-sdk) instead of Docker Model Runner. The Copilot CLI must be installed and authenticated on your machine beforehand — this project does not manage that setup. Copilot sessions prompt interactively (y/n) before performing shell, file, or network actions.
+
+```bash
+./scripts/start-copilot.sh                   # defaults to gpt-4.1
+./scripts/start-copilot.sh claude-opus-4.5   # override model
+./scripts/start.sh --copilot                 # equivalent to the shortcut above
+```
+
+This project pins `GitHub.Copilot.SDK` to `0.2.2` (JSON-RPC protocol v3). Your local Copilot CLI must speak the same protocol — tested with CLI `v1.0.32`. Older CLIs that speak protocol v2 will report a version mismatch at startup.
 
 ### Vault Path
 

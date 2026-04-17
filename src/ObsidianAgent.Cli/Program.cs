@@ -1,15 +1,23 @@
-using System.ClientModel;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Client;
 using ObsidianAgent.Cli;
-using OpenAI;
 using Spectre.Console;
 
 // ── Configuration ──────────────────────────────────────────────────────
 
 bool verbose = args.Contains("--verbose");
+
+const string DefaultCopilotModel = "gpt-4.1";
+
+int copilotIdx = Array.IndexOf(args, "--copilot");
+bool useCopilot = copilotIdx >= 0;
+string? copilotModel = useCopilot
+    ? (copilotIdx + 1 < args.Length && !args[copilotIdx + 1].StartsWith("--")
+        ? args[copilotIdx + 1]
+        : DefaultCopilotModel)
+    : null;
 
 string mcpEndpoint = Environment.GetEnvironmentVariable("MCP_ENDPOINT")
     ?? "http://localhost:5120";
@@ -55,28 +63,34 @@ AnsiConsole.MarkupLine($"[dim]Loaded {mcpTools.Count} MCP tools.[/]");
 
 string vaultName = VaultResolver.Resolve(mcpProjectPath);
 
-// ── AI Chat Client (Docker Model Runner) ──────────────────────────────
-
-IChatClient chatClient = new OpenAIClient(
-        new ApiKeyCredential("not-needed-for-docker-model-runner"),
-        new OpenAIClientOptions { Endpoint = new Uri(aiEndpoint) })
-    .GetChatClient(aiModel)
-    .AsIChatClient();
-
 // ── Agent ─────────────────────────────────────────────────────────────
 
-ChatClientAgent agent = chatClient.AsAIAgent(
-    options: new ChatClientAgentOptions
-    {
-        Name = "obsidian",
-        Description = "Obsidian vault management assistant",
-        ChatOptions = new ChatOptions
-        {
-            Instructions = AgentInstructions.System,
-            Tools = [.. mcpTools]
-        }
-    },
-    loggerFactory: loggerFactory);
+AgentHandle? handle;
+
+try
+{
+    handle = useCopilot
+        ? await AgentFactory
+            .CreateCopilotAsync(copilotModel, [.. mcpTools], AgentInstructions.System)
+            .ConfigureAwait(false)
+        : AgentFactory.CreateDocker(aiEndpoint, aiModel, [.. mcpTools], AgentInstructions.System, loggerFactory);
+}
+catch (Exception ex) when (useCopilot)
+{
+    AnsiConsole.MarkupLine(
+        "[red]Failed to start GitHub Copilot agent.[/] " +
+        "Ensure the Copilot CLI is installed and authenticated: " +
+        "[link]https://github.com/github/copilot-sdk[/]");
+    AnsiConsole.MarkupLine($"[red]Error:[/] {Markup.Escape(ex.Message)}");
+    return;
+}
+
+await using AgentHandle _handleLifetime = handle;
+AIAgent agent = handle.Agent;
+
+string backendLabel = useCopilot
+    ? $"GitHub Copilot ({copilotModel})"
+    : "Docker Model Runner";
 
 // ── Render Header ─────────────────────────────────────────────────────
 
@@ -89,7 +103,7 @@ AnsiConsole.Write(
         .Color(Color.MediumPurple));
 
 AnsiConsole.Write(
-    new Rule($"[dim]Vault: [cyan]{Markup.Escape(vaultName)}[/][/]")
+    new Rule($"[dim]Vault: [cyan]{Markup.Escape(vaultName)}[/]  ·  Backend: [cyan]{Markup.Escape(backendLabel)}[/][/]")
         .RuleStyle(Style.Parse("purple"))
         .Centered());
 

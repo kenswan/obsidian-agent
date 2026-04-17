@@ -5,8 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-rc2" />
-    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-rc2" />
+    <PackageVersion Include="Microsoft.Agents.AI" Version="1.1.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.1.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.GitHub.Copilot" Version="1.1.0-preview.260410.1" />
+    <PackageVersion Include="GitHub.Copilot.SDK" Version="0.2.2" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
     <PackageVersion Include="ModelContextProtocol" Version="1.0.0" />

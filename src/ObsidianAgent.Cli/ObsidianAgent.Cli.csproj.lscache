@@ -41,7 +41,7 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /define:TRACE;DEBUG;NET;NET10_0;NETCOREAPP;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER
 /highentropyva+
 /nullable:enable
-/features:"InterceptorsNamespaces=;Microsoft.Extensions.Validation.Generated"
+/features:"InterceptorsNamespaces=;StreamJsonRpc.Generated;;Microsoft.Extensions.Validation.Generated"
 /debug+
 /debug:portable
 /filealign:512
@@ -56,8 +56,10 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
+AgentFactory.cs
 AgentInstructions.cs
 ChatRenderer.cs
+CopilotPermissions.cs
 McpServerManager.cs
 obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
@@ -236,13 +238,17 @@ VaultResolver.cs
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
 <NUGET>/
- microsoft.agents.ai.abstractions/1.0.0-rc2/lib/net10.0/Microsoft.Agents.AI.Abstractions.dll
- microsoft.agents.ai.openai/1.0.0-rc2/lib/net10.0/Microsoft.Agents.AI.OpenAI.dll
- microsoft.agents.ai/1.0.0-rc2/lib/net10.0/Microsoft.Agents.AI.dll
- microsoft.extensions.ai.abstractions/10.3.0/lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll
- microsoft.extensions.ai.openai/10.3.0/lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll
- microsoft.extensions.ai/10.3.0/lib/net10.0/Microsoft.Extensions.AI.dll
- microsoft.extensions.caching.abstractions/10.0.3/lib/net10.0/Microsoft.Extensions.Caching.Abstractions.dll
+ github.copilot.sdk/0.1.29/lib/net8.0/GitHub.Copilot.SDK.dll
+ google.protobuf/3.30.2/lib/net5.0/Google.Protobuf.dll
+ microsoft.agents.ai.abstractions/1.1.0/lib/net10.0/Microsoft.Agents.AI.Abstractions.dll
+ microsoft.agents.ai.github.copilot/1.1.0-preview.260410.1/lib/net10.0/Microsoft.Agents.AI.GitHub.Copilot.dll
+ microsoft.agents.ai.openai/1.1.0/lib/net10.0/Microsoft.Agents.AI.OpenAI.dll
+ microsoft.agents.ai/1.1.0/lib/net10.0/Microsoft.Agents.AI.dll
+ microsoft.extensions.ai.abstractions/10.4.0/lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll
+ microsoft.extensions.ai.openai/10.4.0/lib/net10.0/Microsoft.Extensions.AI.OpenAI.dll
+ microsoft.extensions.ai/10.4.0/lib/net10.0/Microsoft.Extensions.AI.dll
+ microsoft.extensions.caching.abstractions/10.0.4/lib/net10.0/Microsoft.Extensions.Caching.Abstractions.dll
+ microsoft.extensions.compliance.abstractions/10.4.0/lib/net10.0/Microsoft.Extensions.Compliance.Abstractions.dll
  microsoft.extensions.configuration.abstractions/10.0.5/lib/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll
  microsoft.extensions.configuration.binder/10.0.5/lib/net10.0/Microsoft.Extensions.Configuration.Binder.dll
  microsoft.extensions.configuration/10.0.5/lib/net10.0/Microsoft.Extensions.Configuration.dll
@@ -255,17 +261,19 @@ VaultResolver.cs
  microsoft.extensions.http/10.0.5/lib/net10.0/Microsoft.Extensions.Http.dll
  microsoft.extensions.logging.abstractions/10.0.5/lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll
  microsoft.extensions.logging/10.0.5/lib/net10.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.objectpool/10.0.4/lib/net10.0/Microsoft.Extensions.ObjectPool.dll
  microsoft.extensions.options.configurationextensions/10.0.5/lib/net10.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
  microsoft.extensions.options/10.0.5/lib/net10.0/Microsoft.Extensions.Options.dll
  microsoft.extensions.primitives/10.0.5/lib/net10.0/Microsoft.Extensions.Primitives.dll
  microsoft.extensions.vectordata.abstractions/9.7.0/lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll
+ microsoft.ml.tokenizers/2.0.0/lib/net8.0/Microsoft.ML.Tokenizers.dll
  modelcontextprotocol.core/1.0.0/lib/net10.0/ModelContextProtocol.Core.dll
  modelcontextprotocol/1.0.0/lib/net10.0/ModelContextProtocol.dll
- openai/2.8.0/lib/net8.0/OpenAI.dll
+ openai/2.9.1/lib/net10.0/OpenAI.dll
  spectre.console/0.54.0/lib/net10.0/Spectre.Console.dll
- system.clientmodel/1.8.1/lib/net9.0/System.ClientModel.dll
- system.memory.data/8.0.1/lib/net8.0/System.Memory.Data.dll
- system.numerics.tensors/10.0.3/lib/net10.0/System.Numerics.Tensors.dll
+ system.clientmodel/1.10.0/lib/net10.0/System.ClientModel.dll
+ system.memory.data/10.0.3/lib/net10.0/System.Memory.Data.dll
+ system.numerics.tensors/10.0.4/lib/net10.0/System.Numerics.Tensors.dll
 
 [analyzerReferences]
 ../../../../../../../usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/10.0.3/analyzers/dotnet/cs/
@@ -282,7 +290,14 @@ VaultResolver.cs
  microsoft.extensions.logging.abstractions/10.0.5/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/10.0.5/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
  modelcontextprotocol.core/1.0.0/analyzers/dotnet/cs/ModelContextProtocol.Analyzers.dll
- system.clientmodel/1.8.1/analyzers/dotnet/cs/System.ClientModel.SourceGeneration.dll
+ nerdbank.messagepack/1.0.2/analyzers/cs/
+  Nerdbank.MessagePack.Analyzers.CodeFixes.dll
+  Nerdbank.MessagePack.Analyzers.dll
+ polytype/1.0.0/analyzers/dotnet/cs/PolyType.SourceGenerator.dll
+ streamjsonrpc/2.24.84/analyzers/cs/
+  StreamJsonRpc.Analyzers.CodeFixes.dll
+  StreamJsonRpc.Analyzers.dll
+ system.clientmodel/1.10.0/analyzers/dotnet/cs/System.ClientModel.SourceGeneration.dll
 
 [analyzerConfigFiles]
 ../../

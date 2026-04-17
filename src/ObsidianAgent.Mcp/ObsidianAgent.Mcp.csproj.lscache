@@ -73,8 +73,15 @@ Services/
  ObsidianCliService.cs
 Tools/
  ConfigTools.cs
+ DailyNoteTools.cs
+ GraphTools.cs
  NoteTools.cs
+ PropertyTools.cs
  SearchTools.cs
+ TagTools.cs
+ TaskTools.cs
+ TemplateTools.cs
+ VaultTools.cs
 
 [metadataReferences]
 ../../../../../../../usr/local/share/dotnet/packs/Microsoft.AspNetCore.App.Ref/10.0.3/ref/net10.0/

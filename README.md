@@ -14,7 +14,7 @@ CLI (Spectre.Console)  ──MCP Client──▶  MCP Server (ASP.NET Core HttpT
 ```
 
 - **ObsidianAgent.Cli** — Interactive terminal chat powered by Spectre.Console. Connects to the MCP server as an agent tool and uses Docker Model Runner for AI inference. Auto-starts the MCP server if it's not already running.
-- **ObsidianAgent.Mcp** — ASP.NET Core app exposing Obsidian vault operations (read, create, update, delete, search notes) as MCP tools over HTTP.
+- **ObsidianAgent.Mcp** — ASP.NET Core app exposing 34 Obsidian vault operations (notes, search, graph navigation, tasks, daily notes, properties, tags, templates, and vault intelligence) as MCP tools over HTTP.
 
 ## Prerequisites
 
@@ -67,12 +67,16 @@ A demo vault is included at `sample-vault/` with notes demonstrating tags, wikil
 
 ## MCP Tools
 
-| Tool | Description |
-|------|-------------|
-| `ReadNote` | Read the content of a note |
-| `CreateNote` | Create a new note |
-| `UpdateNote` | Overwrite an existing note |
-| `DeleteNote` | Delete a note |
-| `AppendToNote` | Append content to an existing note |
-| `ListNotes` | List notes in the vault or a subfolder |
-| `SearchNotes` | Full-text search across all notes |
+34 tools organized across 9 domains. See [Features.md](Features.md) for detailed descriptions and integration workflows.
+
+| Domain | Tools |
+|--------|-------|
+| **Notes** | `ReadNote`, `CreateNote`, `UpdateNote`, `DeleteNote`, `AppendToNote`, `ListNotes` |
+| **Search** | `SearchNotes`, `SearchWithContext` |
+| **Knowledge Graph** | `GetBacklinks`, `GetLinks`, `FindOrphans`, `FindDeadEnds`, `FindUnresolved` |
+| **Tasks** | `ListTasks`, `UpdateTask` |
+| **Daily Notes** | `ReadDailyNote`, `AppendToDailyNote`, `PrependToDailyNote`, `GetDailyNotePath` |
+| **Properties & Tags** | `ListProperties`, `ReadProperty`, `SetProperty`, `RemoveProperty`, `ListTags`, `GetTag` |
+| **Templates** | `ListTemplates`, `ReadTemplate`, `CreateFromTemplate` |
+| **Vault Intelligence** | `GetOutline`, `ListBookmarks`, `AddBookmark`, `ListRecents`, `GetVaultInfo` |
+| **Configuration** | `SetVault` |

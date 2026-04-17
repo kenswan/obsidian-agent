@@ -71,7 +71,7 @@ public static class AgentFactory
                 Mode = SystemMessageMode.Append,
                 Content = copilotInstructions
             },
-            OnPermissionRequest = CopilotPermissions.PromptAsync
+            OnPermissionRequest = PermissionHandler.ApproveAll
         };
 
         if (!string.IsNullOrWhiteSpace(model))

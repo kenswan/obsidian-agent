@@ -61,7 +61,7 @@ The CLI will auto-detect that the MCP server isn't running, start it in the back
 
 ### GitHub Copilot backend
 
-When `--copilot` is passed, the CLI uses the [GitHub Copilot CLI](https://github.com/github/copilot-sdk) instead of Docker Model Runner. The Copilot CLI must be installed and authenticated on your machine beforehand — this project does not manage that setup. Copilot sessions prompt interactively (y/n) before performing shell, file, or network actions.
+When `--copilot` is passed, the CLI uses the [GitHub Copilot CLI](https://github.com/github/copilot-sdk) instead of Docker Model Runner. The Copilot CLI must be installed and authenticated on your machine beforehand — this project does not manage that setup. Tool calls are auto-approved (the `--copilot` flag itself is the trust boundary); the agent is instruction-hardened to prefer the MCP vault tools over Copilot's native shell/file tools.
 
 ```bash
 ./scripts/start-copilot.sh                   # defaults to gpt-4.1

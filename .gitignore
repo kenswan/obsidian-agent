@@ -53,5 +53,8 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 
-# macOS
+# Desktop Services Store
 .DS_Store
+
+#VS Code
+*.lscache

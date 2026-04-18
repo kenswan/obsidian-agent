@@ -11,4 +11,12 @@ echo "Starting Obsidian Agent CLI..."
 echo "The CLI will auto-start the MCP server if needed."
 echo ""
 
-dotnet run --project src/ObsidianAgent.Cli -- "$@"
+DOTNET_VERBOSITY="quiet"
+for arg in "$@"; do
+    if [ "$arg" = "--verbose" ]; then
+        DOTNET_VERBOSITY="minimal"
+        break
+    fi
+done
+
+dotnet run --project src/ObsidianAgent.Cli --verbosity "$DOTNET_VERBOSITY" -- "$@"

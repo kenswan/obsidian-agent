@@ -9,7 +9,8 @@ namespace ObsidianAgent.Cli;
 public static class ChatRenderer
 {
     public static async Task<(string ResponseText, List<string> ToolCalls)> RenderStreamingResponseAsync(
-        IAsyncEnumerable<AgentResponseUpdate> responseStream)
+        IAsyncEnumerable<AgentResponseUpdate> responseStream,
+        bool verbose = false)
     {
         StringBuilder responseBuilder = new();
         StringBuilder reasoningBuilder = new();
@@ -49,7 +50,7 @@ public static class ChatRenderer
                             }
                             else
                             {
-                                ProcessNonTextContent(content, toolCallOutputs);
+                                ProcessNonTextContent(content, toolCallOutputs, verbose);
                             }
                         }
 
@@ -82,7 +83,7 @@ public static class ChatRenderer
                             }
                             else
                             {
-                                ProcessNonTextContent(content, toolCallOutputs);
+                                ProcessNonTextContent(content, toolCallOutputs, verbose);
                             }
                         }
 
@@ -135,7 +136,7 @@ public static class ChatRenderer
             : "..." + normalized[^(maxLength - 3)..];
     }
 
-    private static void ProcessNonTextContent(AIContent content, List<string> toolCallOutputs)
+    private static void ProcessNonTextContent(AIContent content, List<string> toolCallOutputs, bool verbose)
     {
         switch (content)
         {
@@ -150,7 +151,7 @@ public static class ChatRenderer
                     toolCallOutputs.Add(
                         $"[red]Error: {Markup.Escape(functionResultContent.Exception.Message)}[/]");
                 }
-                else if (functionResultContent.Result is not null)
+                else if (verbose && functionResultContent.Result is not null)
                 {
                     string resultText = functionResultContent.Result.ToString() ?? "";
                     if (resultText.Length > 200)

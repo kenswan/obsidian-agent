@@ -89,7 +89,7 @@ AnsiConsole.Write(
         .Color(Color.MediumPurple));
 
 AnsiConsole.Write(
-    new Rule($"[dim]Vault: [cyan]{Markup.Escape(vaultName)}[/][/]")
+    new Rule($"[dim]Vault: [cyan]{Markup.Escape(vaultName)}[/]  •  Model: [cyan]{Markup.Escape(aiModel)}[/][/]")
         .RuleStyle(Style.Parse("purple"))
         .Centered());
 
@@ -145,7 +145,7 @@ try
             agent.RunStreamingAsync(messages, session: null);
 
         (string responseText, List<string> toolCalls) =
-            await ChatRenderer.RenderStreamingResponseAsync(stream).ConfigureAwait(false);
+            await ChatRenderer.RenderStreamingResponseAsync(stream, verbose).ConfigureAwait(false);
 
         if (toolCalls.Count > 0)
         {

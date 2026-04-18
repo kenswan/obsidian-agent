@@ -35,7 +35,24 @@ dotnet restore
 dotnet run --project src/ObsidianAgent.Cli
 ```
 
+Or use the convenience script, which runs from the repo root and suppresses `dotnet` build output by default:
+
+```bash
+./scripts/start.sh
+```
+
 The CLI will auto-detect that the MCP server isn't running, start it in the background, and shut it down when you exit.
+
+### Verbose Mode
+
+Pass `--verbose` to surface MCP tool calls, results, and build output for debugging:
+
+```bash
+dotnet run --project src/ObsidianAgent.Cli -- --verbose
+./scripts/start.sh --verbose
+```
+
+When enabled, the banner displays a `VERBOSE MODE` indicator and tool invocations are rendered inline with each streamed response.
 
 ## Configuration
 
